@@ -31,7 +31,7 @@ public class GameOfLife extends javax.swing.JFrame {
 	private void initComponents() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setTitle("Game of Life");
-		this.setSize(200, 250);
+		this.setSize(300, 400);
 
 		generationView = new GenerationView(generation);
 		getContentPane().add(generationView, BorderLayout.CENTER);
