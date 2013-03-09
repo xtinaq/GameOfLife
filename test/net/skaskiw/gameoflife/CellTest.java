@@ -24,35 +24,7 @@ public class CellTest {
 		Cell cell2 = populateCellAtCoordinates(2, 2);
 		assertFalse(cell1.isNeighbor(cell2));		
 	}
-	
-	@Test
-	public void twoPositionsAreTheSame() throws Exception {
-		Position position1 = new Position(1, 1);
-		Position position2 = new Position(1, 1);
-		assertTrue(position1.isSamePosition(position2));
-	}
-	
-	@Test
-	public void twoPositionsAreNotTheSame() throws Exception {
-		Position position1 = new Position(1, 1);
-		Position position2 = new Position(2, 2);
-		assertFalse(position1.isSamePosition(position2));		
-	}
-	
-	@Test
-	public void distanceIsOne() throws Exception {
-		Position position1 = new Position(1, 1);
-		Position position2 = new Position(2, 2);
-		assertEquals(1, position1.distanceTo(position2));
-	}
-	
-	@Test
-	public void distanceIsMoreThanOne() throws Exception {
-		Position position1 = new Position(1, 1);
-		Position position2 = new Position(3, 0);
-		assertTrue(position1.distanceTo(position2) > 1);
-	}
-	
+		
 	@Test
 	public void canDoPositiveCoordinates() throws Exception {
 		assertTrue(allCellsAreNeighbors(1, 1));
@@ -64,15 +36,6 @@ public class CellTest {
 		assertTrue(allCellsAreNeighbors(-2, -2));
 	}
 
-	@Test
-	public void canGetNeighboringPositions() throws Exception {
-		Position middlePosition = new Position(1, 1);
-		List<Position> neighborPositions = middlePosition.getNeighboringPositions();
-		assertEquals(8, neighborPositions.size());
-		for (Position neighborPosition : neighborPositions)
-			assertEquals(1, middlePosition.distanceTo(neighborPosition));
-	}
-	
 	@Test
 	public void cellIsSameCell() throws Exception {
 		Cell cell1 = populateCellAtCoordinates(1, 1);

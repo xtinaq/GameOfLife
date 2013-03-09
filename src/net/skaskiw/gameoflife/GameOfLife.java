@@ -6,23 +6,22 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
-
 public class GameOfLife extends javax.swing.JFrame {
-
+	
 	private static final long serialVersionUID = 1L;
-	private javax.swing.JButton startCommand;
-	private GenerationView generationView;
 	private Generation generation;
+	private GenerationView generationView;
 	private JTextField densityField;
 	private JTextField sizeField;
-	private JLabel lblSize;
-	private JButton stopCommand;
+	private Timer timer;
 
 	public GameOfLife() {
 		initGeneration();
@@ -30,30 +29,43 @@ public class GameOfLife extends javax.swing.JFrame {
 	}
 
 	private void initGeneration() {
-		generation = new Generation();
-		generation.addRule(new LivingCellDiesFromUnderPopulation());
-		generation.addRule(new LivingCellDiesFromOverCrowding());
-		generation.addRule(new LivingCellLivesOn());
-		generation.addRule(new UnbornCellIsBorn());
+		List<Rule> gameRules = new ArrayList<Rule>();
+		gameRules.add(new LivingCellDiesFromUnderPopulation());
+		gameRules.add(new LivingCellDiesFromOverCrowding());
+		gameRules.add(new LivingCellLivesOn());
+		gameRules.add(new UnbornCellIsBorn());
+		generation = new Generation(gameRules);
 	}
 
 	private void initComponents() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setTitle("Game of Life");
 		this.setSize(489, 498);
-
+		initTimer();
+		initGameOfLifePanel();
+		initButtonPanel();
+	}
+	
+	private void initTimer() {
 		ActionListener timerEar = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				startGame();
+				doNextGeneration();
 			}
 		};
-		final Timer timer = new Timer(500, timerEar);
+		timer = new Timer(500, timerEar);		
+	}
 
+	private void initGameOfLifePanel() {
+		generationView = new GenerationView(generation);
+		getContentPane().add(generationView, BorderLayout.CENTER);
+		generationView.setLayout(null);
+	}
+
+	private void initButtonPanel() {
 		JPanel buttonArea = new JPanel();
 		getContentPane().add(buttonArea, BorderLayout.NORTH);
-
-		lblSize = new JLabel("Size");
-
+		
+		JLabel lblSize = new JLabel("Size");
 		sizeField = new JTextField();
 		sizeField.setHorizontalAlignment(SwingConstants.RIGHT);
 		sizeField.setToolTipText("Enter an integer");
@@ -61,7 +73,6 @@ public class GameOfLife extends javax.swing.JFrame {
 		sizeField.setColumns(3);
 
 		JLabel lblDensity = new JLabel("Density");
-
 		densityField = new JTextField();
 		densityField.setHorizontalAlignment(SwingConstants.RIGHT);
 		densityField.setToolTipText("Enter a value between 0 and 1");
@@ -75,17 +86,17 @@ public class GameOfLife extends javax.swing.JFrame {
 			}
 		});
 
-		startCommand = new JButton("Start");
+		JButton startCommand = new JButton("Start");
 		startCommand.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				timer.start();
 			}
 		});
 
-		stopCommand = new JButton("Stop");
+		JButton stopCommand = new JButton("Stop");
 		stopCommand.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				timer.stop(); // stopGame();
+				timer.stop();
 			}
 		});
 
@@ -96,13 +107,9 @@ public class GameOfLife extends javax.swing.JFrame {
 		buttonArea.add(densityField);
 		buttonArea.add(createCommand);
 		buttonArea.add(startCommand);
-		buttonArea.add(stopCommand);
-
-		generationView = new GenerationView(generation);
-		getContentPane().add(generationView, BorderLayout.CENTER);
-		generationView.setLayout(null);
+		buttonArea.add(stopCommand);		
 	}
-
+	
 	private double seedGenerationDensity() {
 		return Double.parseDouble(densityField.getText());
 	}
@@ -117,7 +124,7 @@ public class GameOfLife extends javax.swing.JFrame {
 		generationView.render(generation);
 	}
 
-	private void startGame() {
+	private void doNextGeneration() {
 		if (!generation.isExtinct())
 			generationView.render(generation.next());
 	}

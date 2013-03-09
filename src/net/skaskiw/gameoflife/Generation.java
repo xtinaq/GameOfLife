@@ -1,26 +1,22 @@
 package net.skaskiw.gameoflife;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-
 public class Generation {
 
 	private List<Cell> cells = new ArrayList<Cell>();
-	private List<Rule> rules = new ArrayList<Rule>();
+	private List<Rule> rules;
 	private int sequenceNumber = 0;
+
+	public Generation(List<Rule> gameRules) {
+		rules = gameRules;
+	}
 
 	public void add(Cell cell) {
 		if (!isCellPopulated(cell))
 			cells.add(cell);
-	}
-
-	public void addRule(Rule rule) {
-		rules.add(rule);
-	}
-
-	public int size() {
-		return cells.size();
 	}
 
 	public Cell getCellAt(Position position) {
@@ -32,11 +28,24 @@ public class Generation {
 		return soughtCell;
 	}
 
-	public LivingState getLivingState(Cell cell) {
-		LivingState livingState = LivingState.DEAD;
-		if (isCellPopulated(cell))
-			livingState = LivingState.ALIVE;
-		return livingState;
+	public List<Cell> getCells() {
+		return this.cells;
+	}
+
+	public int size() {
+		return cells.size();
+	}
+
+	public Generation createSeedPopulation(int size, double density) {
+		cells = new ArrayList<Cell>();
+		int centerOffset = Math.round(size / 2);
+		Random densitySeed = new Random();
+		for (int x = 0; x < size; x++)
+			for (int y = 0; y < size; y++)
+				if (densitySeed.nextFloat() < density)
+					this.add(new Cell(new Position(x - centerOffset, y
+							- centerOffset)));
+		return this;
 	}
 
 	public Generation next() {
@@ -45,6 +54,62 @@ public class Generation {
 		cells = nextGenerationCells;
 		sequenceNumber++;
 		return this;
+	}
+
+	public boolean isExtinct() {
+		return (size() == 0);
+	}
+
+	public boolean isCellPopulated(Cell cell) {
+		boolean cellExists = false;
+		for (Cell existingCell : cells) {
+			if (existingCell.isSameCell(cell))
+				cellExists = true;
+		}
+		return cellExists;
+	}
+
+	public LivingState getLivingState(Cell cell) {
+		LivingState livingState = LivingState.DEAD;
+		if (isCellPopulated(cell))
+			livingState = LivingState.ALIVE;
+		return livingState;
+	}
+
+	public int countNeighbors(Cell cell) {
+		int count = 0;
+		for (Cell candidateNeighbor : cells) {
+			if (candidateNeighbor.isNeighbor(cell)) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	public List<Cell> getUnborns() {
+		Generation unbornGeneration = new Generation(new ArrayList<Rule>());
+		List<Position> neighborPositions = new ArrayList<Position>();
+		Cell unbornCell;
+		for (Cell cell : cells) {
+			neighborPositions = cell.getPosition().getNeighboringPositions();
+			for (Position position : neighborPositions) {
+				unbornCell = new Cell(position);
+				if (!this.isCellPopulated(unbornCell))
+					unbornGeneration.add(unbornCell);
+			}
+		}
+		return unbornGeneration.cells;
+	}
+
+	public int sequenceNumber() {
+		return sequenceNumber;
+	}
+
+	public String toString() {
+		String generationCoordinates = "";
+		for (Cell cell : cells)
+			generationCoordinates = generationCoordinates + cell.toString();
+		return generationCoordinates;
 	}
 
 	private List<Cell> keepSurvivors() {
@@ -85,69 +150,5 @@ public class Generation {
 								getLivingState(cell), countNeighbors(cell)));
 		}
 		return isNewLife;
-	}
-
-	public int countNeighbors(Cell cell) {
-		int count = 0;
-		for (Cell candidateNeighbor : cells) {
-			if (candidateNeighbor.isNeighbor(cell)) {
-				count++;
-			}
-		}
-		return count;
-	}
-
-	public String toString() {
-		String generationCoordinates = "";
-		for (Cell cell : cells)
-			generationCoordinates = generationCoordinates + cell.toString();
-		return generationCoordinates;
-	}
-
-	public boolean isCellPopulated(Cell cell) {
-		boolean cellExists = false;
-		for (Cell existingCell : cells) {
-			if (existingCell.isSameCell(cell))
-				cellExists = true;
-		}
-		return cellExists;
-	}
-
-	public boolean isExtinct() {
-		return (size() == 0);
-	}
-
-	public List<Cell> getUnborns() {
-		Generation unbornGeneration = new Generation();
-		List<Position> neighborPositions = new ArrayList<Position>();
-		Cell unbornCell;
-		for (Cell cell : cells) {
-			neighborPositions = cell.getPosition().getNeighboringPositions();
-			for (Position position : neighborPositions) {
-				unbornCell = new Cell(position);
-				if (!this.isCellPopulated(unbornCell))
-					unbornGeneration.add(unbornCell);
-			}
-		}
-		return unbornGeneration.cells;
-	}
-
-	public int sequenceNumber() {
-		return sequenceNumber;
-	}
-
-	public Generation createSeedPopulation(int size, double density) {
-		cells = new ArrayList<Cell>();
-		int centerOffset = Math.round(size/2);
-		Random densitySeed = new Random();
-		for (int x = 0; x < size; x++)
-			for (int y = 0; y < size; y++)
-				if (densitySeed.nextFloat() < density)
-					this.add(new Cell(new Position(x-centerOffset, y-centerOffset)));
-		return this;
-	}
-	
-	public List<Cell> getCells() {
-		return this.cells;
 	}
 }

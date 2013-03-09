@@ -1,17 +1,8 @@
 package net.skaskiw.gameoflife;
+
 import static org.junit.Assert.*;
-
+import java.util.ArrayList;
 import java.util.List;
-
-import net.skaskiw.gameoflife.Cell;
-import net.skaskiw.gameoflife.Generation;
-import net.skaskiw.gameoflife.LivingCellDiesFromOverCrowding;
-import net.skaskiw.gameoflife.LivingCellDiesFromUnderPopulation;
-import net.skaskiw.gameoflife.LivingCellLivesOn;
-import net.skaskiw.gameoflife.LivingState;
-import net.skaskiw.gameoflife.Position;
-import net.skaskiw.gameoflife.Rule;
-import net.skaskiw.gameoflife.UnbornCellIsBorn;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,11 +13,12 @@ public class GenerationTest {
 
 	@Before
 	public void setup() {
-		generation = new Generation();
-		generation.addRule(new LivingCellDiesFromUnderPopulation());
-		generation.addRule(new LivingCellDiesFromOverCrowding());
-		generation.addRule(new LivingCellLivesOn());
-		generation.addRule(new UnbornCellIsBorn());
+		List<Rule> gameRules = new ArrayList<Rule>();
+		gameRules.add(new LivingCellDiesFromUnderPopulation());
+		gameRules.add(new LivingCellDiesFromOverCrowding());
+		gameRules.add(new LivingCellLivesOn());
+		gameRules.add(new UnbornCellIsBorn());
+		generation = new Generation(gameRules);
 	}
 
 	@Test
@@ -53,17 +45,19 @@ public class GenerationTest {
 	}
 
 	@Test
+	public void canGetLivingState() throws Exception {
+		Cell cell = addCellAtCoordinates(1, 1);
+		assertEquals(LivingState.ALIVE, generation.getLivingState(cell));
+		Cell notAddedCell = new Cell(new Position(2, 2));
+		assertEquals(LivingState.DEAD, generation.getLivingState(notAddedCell));
+	}
+
+	@Test
 	public void canKnowIfCellIsAliveOrDead() throws Exception {
 		Cell cell = addCellAtCoordinates(1, 1);
 		assertTrue(generation.isCellPopulated(cell));
 		Cell cellNotAddedToGeneration = new Cell(new Position(0, 0));
 		assertFalse(generation.isCellPopulated(cellNotAddedToGeneration));
-	}
-
-	@Test
-	public void canAddRules() throws Exception {
-		Rule rule = new LivingCellDiesFromUnderPopulation();
-		generation.addRule(rule);
 	}
 
 	@Test
@@ -163,19 +157,10 @@ public class GenerationTest {
 	}
 
 	@Test
-	public void canGetLivingState() throws Exception {
-		Cell cell = addCellAtCoordinates(1, 1);
-		assertEquals(LivingState.ALIVE, generation.getLivingState(cell));
-		Cell notAddedCell = new Cell(new Position(2, 2));
-		assertEquals(LivingState.DEAD, generation.getLivingState(notAddedCell));
-	}
-
-	@Test
-	public void canConvertToString() throws Exception {
-		addCellAtCoordinates(1, 1);
-		assertEquals("(1,1)", generation.toString());
-		addCellAtCoordinates(2, 2);
-		assertEquals("(1,1)(2,2)", generation.toString());
+	public void canKnowIfExtinct() throws Exception {
+		assertTrue(generation.isExtinct());
+		addCellAtCoordinates(0, 0);
+		assertFalse(generation.isExtinct());
 	}
 
 	@Test
@@ -188,9 +173,9 @@ public class GenerationTest {
 		}
 	}
 
-	public void canKnowIfExtinct() throws Exception {
-		assertTrue(generation.isExtinct());
-		addCellAtCoordinates(0, 0);
+	@Test
+	public void canRunRandomGenerations() throws Exception {
+		generation.createSeedPopulation(5, 0.4);
 		assertFalse(generation.isExtinct());
 	}
 
@@ -202,9 +187,11 @@ public class GenerationTest {
 	}
 
 	@Test
-	public void canRunRandomGenerations() throws Exception {
-		generation.createSeedPopulation(5, 0.4);
-		assertFalse(generation.isExtinct());
+	public void canConvertToString() throws Exception {
+		addCellAtCoordinates(1, 1);
+		assertEquals("(1,1)", generation.toString());
+		addCellAtCoordinates(2, 2);
+		assertEquals("(1,1)(2,2)", generation.toString());
 	}
 
 	// -------------------------------------------------------
